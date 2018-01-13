@@ -1,0 +1,91 @@
+
+Sub ExportJoinsAsIGS()
+'RUN THIS MACRO
+Dim objShellApp
+Dim objFolder
+Dim objFldrItem
+Dim objPath
+
+Set objShellApp = CreateObject("Shell.Application")
+Set objFolder = objShellApp.BrowseForFolder(0, "Select Output Directory", &H1)
+BrowseForFolderDialogBox = objPath
+
+
+Iterator (objFolder.self.Path)
+
+End Sub
+
+
+
+
+Private Sub HideAllJoins()
+
+Dim Document1 As PartDocument
+Set Document1 = CATIA.ActiveDocument
+
+Dim selection1 As Selection
+Set selection1 = Document1.Selection
+
+selection1.Search "CATStFreeStyleSearch.GSMAssemble.Visibility=Visible,all"
+
+Dim selection2 As Selection
+Set selection2 = Document1.Selection
+
+Dim visPropertySet1 As VisPropertySet
+
+Set visPropertySet1 = selection2.VisProperties
+
+visPropertySet1.SetShow catVisPropertyNoShowAttr
+
+selection2.Clear
+
+End Sub
+
+Private Sub Iterator(Path As String)
+
+'Hide all Joins
+HideAllJoins
+
+'Create selection with all joins
+Dim Document1 As PartDocument
+Set Document1 = CATIA.ActiveDocument
+
+Dim selection1 As Selection
+Set selection1 = Document1.Selection
+
+selection1.Search "CATStFreeStyleSearch.GSMAssemble,all"
+
+Dim n As Variant
+n = 1
+
+Do While n < selection1.Count + 1
+    Set selection2 = Document1.Selection
+    selection2.Search "(Name='" & selection1.Item(n).Value.Name & "' & CATStFreeStyleSearch.GSMAssemble),all"
+    Dim visPropertySet1 As VisPropertySet
+
+    Set visPropertySet1 = selection2.VisProperties
+
+    visPropertySet1.SetShow catVisPropertyShowAttr
+    Document1.ExportData Path & "\" & selection1.Item(1).Value.Name & ".igs", "igs"
+    HideAllJoins
+    selection1.Search "CATStFreeStyleSearch.GSMAssemble,all"
+    n = n + 1
+Loop
+selection1.Clear
+
+'show them all again
+
+selection1.Search "CATStFreeStyleSearch.GSMAssemble,all"
+
+
+Set selection2 = Document1.Selection
+
+
+
+Set visPropertySet1 = selection2.VisProperties
+
+visPropertySet1.SetShow catVisPropertyShowAttr
+
+selection1.Clear
+
+End Sub
